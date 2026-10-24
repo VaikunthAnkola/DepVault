@@ -55,10 +55,9 @@
   }
 
   /* -------------------------------------------------------------------------
-     Theme Management: Crystal Clear Segmented Switcher
+     Theme Management: Interactive Toggle Switch
      ------------------------------------------------------------------------- */
-  const btnThemeLight = document.getElementById('btn-theme-light');
-  const btnThemeDark = document.getElementById('btn-theme-dark');
+  const themeToggle = document.getElementById('theme-toggle-switch');
 
   function setPageTheme(theme) {
     const isDark = theme === 'dark';
@@ -67,19 +66,12 @@
     // Apply attribute to document root
     document.documentElement.setAttribute('data-theme', targetTheme);
 
-    // Update segmented button UI states
-    if (btnThemeLight && btnThemeDark) {
-      if (isDark) {
-        btnThemeDark.classList.add('active');
-        btnThemeDark.setAttribute('aria-checked', 'true');
-        btnThemeLight.classList.remove('active');
-        btnThemeLight.setAttribute('aria-checked', 'false');
-      } else {
-        btnThemeLight.classList.add('active');
-        btnThemeLight.setAttribute('aria-checked', 'true');
-        btnThemeDark.classList.remove('active');
-        btnThemeDark.setAttribute('aria-checked', 'false');
-      }
+    // Update toggle switch state and accessibility attributes
+    if (themeToggle) {
+      themeToggle.setAttribute('aria-checked', isDark ? 'true' : 'false');
+      const actionLabel = isDark ? 'Switch to light mode' : 'Switch to dark mode';
+      themeToggle.setAttribute('title', actionLabel);
+      themeToggle.setAttribute('aria-label', actionLabel);
     }
 
     try {
@@ -89,27 +81,24 @@
     }
   }
 
-  // Bind click handlers directly to both options
-  if (btnThemeLight) {
-    btnThemeLight.addEventListener('click', (e) => {
+  // Bind click handler to interactive toggle switch
+  if (themeToggle) {
+    themeToggle.addEventListener('click', (e) => {
       e.preventDefault();
-      setPageTheme('light');
+      const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+      const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      setPageTheme(nextTheme);
     });
   }
 
-  if (btnThemeDark) {
-    btnThemeDark.addEventListener('click', (e) => {
-      e.preventDefault();
-      setPageTheme('dark');
-    });
-  }
-
-  // Initialize theme: check saved preference, default to clean White + Peacock Blue (light)
+  // Initialize theme: check saved preference, or respect user OS preference
   let initialTheme = 'light';
   try {
     const saved = localStorage.getItem('pg_theme');
     if (saved === 'dark' || saved === 'light') {
       initialTheme = saved;
+    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      initialTheme = 'dark';
     }
   } catch (e) {}
 
